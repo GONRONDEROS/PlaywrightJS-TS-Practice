@@ -11,6 +11,7 @@ test.only('Log in Test',async ({browser})=> {
     const products = page.locator(".card-body");
     const productName = "ZARA COAT 3";
     const cartBtn = page.locator("[routerlink*='cart']");
+    const checkOutBtn = page.locator("text='Checkout'")
 
     //navegamos a la pagina del test
     await page.goto("https://rahulshettyacademy.com/client/auth/login/");
@@ -51,6 +52,10 @@ test.only('Log in Test',async ({browser})=> {
     await page.locator("div li").first().waitFor(); //como isVisible no tiene auto wait, agregamos este waitFor para asegurarnos que el listado de productos del carrito fue cargados
     const bool = await page.locator("h3:has-text('ZARA COAT 3')").isVisible();
     expect(bool).toBeTruthy();
+
+    //Clickeamos el CheckoutButton
+    await checkOutBtn.click();
+    
 
     //await page.pause();
 
