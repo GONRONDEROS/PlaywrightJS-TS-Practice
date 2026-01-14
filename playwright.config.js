@@ -28,9 +28,12 @@ const config = ({
 
     //seteo el browser q quiero usar en los tests
     browserName : 'chromium',
-    headless: false
+    headless: false,
    //si esta en true, no se veran los borwsers al ejecutar los tests. Si lo pongo en false, si
-    
+   //para tomar screenshots de cada paso de cada test
+   //screenshot: 'on',
+   //para generar un registro (log) de cada uno de los pasos ejecutados
+   //trace: 'on' // si quiero que solo lo haga con los fallidos: 'retain-on-failure'
   },
 
   
