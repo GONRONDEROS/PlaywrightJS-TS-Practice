@@ -1,7 +1,5 @@
 const {test, expect} = require('@playwright/test');
 const { Assert } = require('node:assert');
-const { info } = require('node:console');
-const { waitForDebugger } = require('node:inspector');
 
 test('Check Out Test',async ({browser})=> {
     const context = await browser.newContext();

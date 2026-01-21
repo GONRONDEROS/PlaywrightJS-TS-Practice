@@ -1,56 +1,44 @@
 const {test, expect, request} = require('@playwright/test');
 const { Assert } = require('node:assert');
-const loginApiPaylod = {userEmail: "gonzaronderos@gmail.com", userPassword: "Estudiantes?11"};
-let token; //creamos la variable token para que sea accesible 
+const { APIUtils } = require('./utils/APIUtils');
+
+const loginApiPayload = {userEmail: "gonzaronderos@gmail.com", userPassword: "PutoElQueLee"};
+let orderPayload = {orders: [{country: "Argentina", productOrderedId: "6960eac0c941646b7a8b3e68"}]}
+
+let response; 
 
 test.beforeAll( async ()=>{
+    //Log in API
     const apiContext = await request.newContext();
-    const loginResponse = await apiContext.post("https://rahulshettyacademy.com/api/ecom/auth/login",
-        {
-            data: loginApiPaylod
-        } )
-        expect(await loginResponse.ok()).toBeTruthy(); //se fija si la response es 200,2001,2
-        //ahora necesitamos guardar la response de la llamada post
-        const loginResponseJson = await loginResponse.json();
-        //buscamos el token en el json y lo guardamos en una variable
-        token = loginResponseJson.token;
-        console.log(token);
+    const apiUtils = new APIUtils(apiContext, loginApiPayload);
+    response = await apiUtils.createOrder(orderPayload); 
+
     });
 
-test.beforeEach( async ()=>{
-
-});
-
-
-test('Log in Test',async ({page})=> {
+test('@API Place the Order',async ({page})=> {
     
     ///debemos insertar el token usando javascript
     await page.addInitScript(value => {
-
+        //guardamos el token en el local storage
         window.localStorage.setItem('token', value);
-    }, token);
+    }, response.token);
     
     
-    await page.goto("https://rahulshettyacademy.com/client/");
+    await page.goto("https://rahulshettyacademy.com/client/#/dashboard/dash");
+    await page.locator("button[routerlink*='myorders']").click();
+    await page.locator("tbody").waitFor();
+    const row = await page.locator("tbody tr");
 
-    const products = page.locator(".card-body");
-    const productName = "ZARA COAT 3";
-    const cartBtn = page.locator("[routerlink*='cart']");
-    const checkOutBtn = page.locator("text='Checkout'") 
-    const allCardTitles = await page.locator(".card-body b").allTextContents(); 
-    console.log(allCardTitles);
-    const countProducts = await products.count();
-    for(let i = 0; i < countProducts; ++i) {
-        if (await products.nth(i).locator("b").textContent() === productName) {
-            await products.nth(i).locator("text=  Add To Cart").click();
+    for(let i = 0; i < await row.count(); i++) {
+        await page.pause();
+        const rowOrderId = await row.nth(i).locator("th").textContent();
+        if(await response.orderId.includes(rowOrderId))
+        {
+            await row.nth(i).locator("button").first().click();
             break;
         }
+    const orderIdDetails = await page.locator(".col-text").textContent();
+    await page.pause();
+    expect(response.orderId.includes(orderIdDetails)).toBeTruthy();
     };
-
-    await cartBtn.click();
-    await page.locator("div li").first().waitFor(); //como isVisible no tiene auto wait, agregamos este waitFor para asegurarnos que el listado de productos del carrito fue cargados
-    const bool = await page.locator("h3:has-text('ZARA COAT 3')").isVisible();
-    expect(bool).toBeTruthy();
-    await checkOutBtn.click();
-    
 });
