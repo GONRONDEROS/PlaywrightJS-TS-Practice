@@ -3,7 +3,8 @@ class DashboardPage{
         this.page = page;
         this.products = page.locator(".card-body");
         this.productsText = page.locator(".card-body b");
-        this.cartButton = page.locator("[routerlink*='cart']");
+        this.cart = page.locator("[routerlink*='cart']")
+        this.orders = page.locator("button[routerlink*='myorders']");
     }
 
     async searchProductAddCart(productName){
@@ -18,7 +19,11 @@ class DashboardPage{
             };
     }
     async navigateToCart(){
-        await this.cartButton.click();
+        await this.cart.click();
+    }
+
+    async navigateToOrders(){
+        await this.orders.click()
     }
 }
 module.exports = {DashboardPage}

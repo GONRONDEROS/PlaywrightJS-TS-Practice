@@ -1,29 +1,47 @@
 const {test, expect} = require('@playwright/test');
-const { Assert } = require('node:assert');
+const {customTest} = require('../utils/test-base');
 const {POManager} = require('../pageobjects/POManager');
+//Json > string > js object
+const dataSet = JSON.parse(JSON.stringify(require("../utils/placeorderTestData.json")));
 
-test.only('Log in Test',async ({page})=> {
+for(const data of dataSet)
+{
+test(`Log in Test - ${data.userEmail}, ${data.productName}`,async ({page})=> {
     const poManager = new POManager(page);
-    const userEmail = "gonzaronderos@gmail.com";
-    const passsword = "Estudiantes?11";
-    const productName = "ZARA COAT 3";
     const loginPage = poManager.getLoginPage()
     await loginPage.goTo();
-    await expect(page.locator("h1.login-title")).toContainText("Log in");
-    await loginPage.validLogin(userEmail, passsword);
+    await loginPage.validLogin(data.userEmail, data.password);
     const dashboardPage = poManager.getDashBoardPage(); 
-    await dashboardPage.searchProductAddCart(productName);
+    await dashboardPage.searchProductAddCart(data.productName);
     await dashboardPage.navigateToCart();
+
     const cartPage = poManager.getCartPage();
-    await cartPage.confirmProductAnProceedtoCheckout();
-    await expect(page.locator(".user__name [type='text']").first()).toHaveText(userEmail);
+    await cartPage.verifyProductIsDisplayed(data.productName);
+    await cartPage.checkOut();
+
     const checkOutPage = poManager.getCheckOutPage()
-    await checkOutPage.completeShippingInfo();
-    await checkOutPage.placeOrder();
-    await expect(page.locator(".hero-primary")).toHaveText("  Thankyou for the order. ");
-    const order = await page.locator(".em-spacer-1 .ng-star-inserted").textContent();
+    await checkOutPage.searchCountryAndSelect("arg","Argentina")
+    const orderId = await checkOutPage.submitAndGetOrderId();
+    console.log(orderId);
+    await dashboardPage.navigateToOrders();
+    
     const myOrderPage = poManager.getMyOrdersPage();
-    await myOrderPage.goToMyOrders();
-    await myOrderPage.verifyOrderIsListed(order);
+    await myOrderPage.searchOrderAndSelect(orderId);
+    expect(orderId.includes(await myOrderPage.getOrderId())).toBeTruthy();
 });
 
+}
+
+customTest.only(`Log in Test (fixture Data)`,async ({page,testDataForOrder})=> {
+    const poManager = new POManager(page);
+    const loginPage = poManager.getLoginPage()
+    await loginPage.goTo();
+    await loginPage.validLogin(testDataForOrder.userEmail, testDataForOrder.password);
+    const dashboardPage = poManager.getDashBoardPage(); 
+    await dashboardPage.searchProductAddCart(testDataForOrder.productName);
+    await dashboardPage.navigateToCart();
+
+    const cartPage = poManager.getCartPage();
+    await cartPage.verifyProductIsDisplayed(testDataForOrder.productName);
+    await cartPage.checkOut();
+});
