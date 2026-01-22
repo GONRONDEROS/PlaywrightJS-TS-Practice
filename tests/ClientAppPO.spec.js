@@ -1,11 +1,6 @@
 const {test, expect} = require('@playwright/test');
 const { Assert } = require('node:assert');
 const {POManager} = require('../pageobjects/POManager');
-// const {LoginPage} = require('../pageobjects/LoginPage');
-// const {DashboardPage} = require('../pageobjects/DashboardPage');
-// const {CartPage} = require('../pageobjects/CartPage');
-// const {CheckOutPage} = require('../pageobjects/CheckOutPage')
-// const {MyOrdersPage} = require('../pageobjects/MyOrdersPage');
 
 test.only('Log in Test',async ({page})=> {
     const poManager = new POManager(page);
